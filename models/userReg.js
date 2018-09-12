@@ -44,6 +44,6 @@ userRegisterSchema.pre('save', function(next) {
 
 
 
-var registerInformation = mongoose.model('user',userRegisterSchema);
+var registerInformation = mongoose.model('user',userRegisterSchema,'users');
 
 module.exports = {registerInformation};

@@ -8,6 +8,7 @@ var bcrypt = require('bcrypt');
  */
 var {mongoose} = require('./db/mongoose');
 var {registerInformation} =require('./models/userReg');
+var {blogInformation} =require('./models/blogModel');
 const myQuery = require('./db/mongooseQuery');
 
 /**
@@ -139,6 +140,35 @@ app.post('/register',(req,res)=>{
     //console.log(Qr);
 });
 
+
+app.get('/blog',(req,res)=>{
+
+    blogInformation.find({},function (err, blog){
+        if(err)
+        {
+            console.log('Error in run qurey');
+        }
+        if(blog.length === 0){
+            res.status(400).send('No item found');
+        }
+        else
+        {
+            console.log(blog);
+            res.status(201).send(blog);
+        }
+    });
+    
+    // if(req.accepts('text/html')){
+    //     res.sendFile(__dirname+'/img2.jpg');
+    //     console.log(__dirname);
+    //     console.log(__filename);
+    //     return;
+    //  }
+    //  else if(req.accepts('application/json')){  
+    //     res.json({'key':'value'});
+    //     return;
+    //  }
+});
 /**
  * Find port and listen to this port
  */
