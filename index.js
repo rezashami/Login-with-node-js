@@ -3,6 +3,9 @@ const app =express();
 const Joi = require('joi');
 var bcrypt = require('bcrypt');
 
+var moment = require('jalali-moment');
+
+
 /**
  * This modules created by me!
  */
@@ -30,12 +33,14 @@ var comparePassword = function(candidatePassword,ownPassword, cb) {
  */
 app.use(express.json());
 
+app.use(express.static(__dirname+'/public'));
+
 /**
  * 
  * @param {This is an object and it should be a valid Object.For more information about structure of Object, see models file } user 
  * This method call when we need to add new user to our system
  */
-async function createUser(user) {
+var add = function createUser(user ,cb) {
     const myUser = new registerInformation({
         userName: user.userName,
         password: user.password,
@@ -47,8 +52,11 @@ async function createUser(user) {
         sickness: user.sickness,
         phoneNumber: user.phoneNumber
     });
-    const result = await myUser.save()
-    .then((doc)=>{console.log('Saved user ',doc.id);},(e)=>{console.log('Unable save user');});
+	registerInformation.create(myUser, function (err, obj) {
+	if (err){ console.log('Errrrrrrrprrprr'); return;}
+	console.log(obj);
+	return obj;
+  });
 }
 
 
@@ -71,6 +79,7 @@ app.post('/login',(req,res)=>{
         if(err)
         {
             console.log('Error in run qurey');
+            res.status(500).send('Internal Error');
         }
         //console.log(user);
         if(user.length === 0){
@@ -127,10 +136,30 @@ app.post('/register',(req,res)=>{
         if(err)
         {
             console.log('Error in run qurey');
+            res.status(500).send('Internal Error');
         }
         if(user.length === 0){
-            createUser(req.body);
-            res.status(201).send(result);
+			const myUser = new registerInformation({
+				userName: req.body.userName,
+				password: req.body.password,
+				whieght: req.body.whieght,
+				hight : req.body.hight,
+				birthDay: req.body.birthDay,
+				gender: req.body.gender,
+				activity: req.body.activity,
+				sickness: req.body.sickness,
+				phoneNumber: req.body.phoneNumber
+			});
+			registerInformation.create(myUser, function (err, obj) {
+				if (err){ 
+					console.log('Error in run add');
+					res.status(500).send('Internal Error');
+				}
+				else{
+					console.log(obj);
+					res.status(201).send(obj);
+				}
+			});
         }
         else
         {
@@ -147,13 +176,32 @@ app.get('/blog',(req,res)=>{
         if(err)
         {
             console.log('Error in run qurey');
+            res.status(500).send('Internal Error');
         }
         if(blog.length === 0){
             res.status(400).send('No item found');
         }
         else
         {
+            
             console.log(blog);
+            blog.forEach((element)=>{
+                date = new Date(element.date);
+                year = date.getFullYear();
+                month = date.getMonth()+1;
+                dt = date.getDate();
+                if (dt < 10) {
+                dt = '0' + dt;
+                }
+                if (month < 10) {
+                month = '0' + month;
+                }
+
+                temp = year+'/' + month + '/'+dt;
+                newDate =  moment(temp, 'YYYY/MM/DD').locale('fa').format('YYYY/MM/DD');
+                console.log(newDate);
+                element.date =newDate;
+            })
             res.status(201).send(blog);
         }
     });
@@ -172,7 +220,7 @@ app.get('/blog',(req,res)=>{
 /**
  * Find port and listen to this port
  */
-const port = process.env.PORT ||3000;
+const port = process.env.PORT ||3001;
 app.listen(port,()=>{
    console.log(`Listening port ${port}`); 
 });
